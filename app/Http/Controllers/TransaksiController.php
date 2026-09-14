@@ -33,12 +33,34 @@ class TransaksiController extends Controller implements HasMiddleware
             : '';
 
         $q = is_string($request->query('q')) ? trim($request->query('q')) : '';
+
+        $tanggalRaw = $request->query('tanggal');
+        $tanggalFilter = is_string($tanggalRaw) && ctype_digit($tanggalRaw) && in_array((int) $tanggalRaw, range(1, 31), true)
+            ? (int) $tanggalRaw
+            : null;
+
+        $bulanRaw = $request->query('bulan');
+        $bulanFilter = is_string($bulanRaw) && ctype_digit($bulanRaw) && in_array((int) $bulanRaw, range(1, 12), true)
+            ? (int) $bulanRaw
+            : null;
+
+        $transaksiPertama = Transaksi::query()
+            ->when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id))
+            ->min('created_at');
+
+        $tahunMulai = $transaksiPertama
+            ? \Carbon\Carbon::parse($transaksiPertama)->year
+            : now()->year;
+
+        $tahunRaw = $request->query('tahun');
+        $tahunFilter = is_string($tahunRaw) && ctype_digit($tahunRaw) && in_array((int) $tahunRaw, range($tahunMulai, now()->year), true)
+            ? (int) $tahunRaw
+            : null;
+
         $transaksi = Transaksi::query()
             ->with('user')
             ->withCount('details')
-
             ->when(! $user->isAdmin(), fn($query) => $query->where('user_id', $user->id))
-
             ->when($statusFilter !== '', fn($query) => $query->where('status', $statusFilter))
             ->when($q !== '', function ($query) use ($q, $user) {
                 $query->where(function ($sub) use ($q, $user) {
@@ -50,12 +72,22 @@ class TransaksiController extends Controller implements HasMiddleware
                     }
                 });
             })
-
-            ->latest()
+            ->when($tahunFilter, fn($query) => $query->whereYear('created_at', $tahunFilter))
+            ->when($bulanFilter, fn($query) => $query->whereMonth('created_at', $bulanFilter))
+            ->when($tanggalFilter, fn($query) => $query->whereDay('created_at', $tanggalFilter))
+            ->latest()->orderBy('id', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        return view('transaksi.index', compact('transaksi', 'statusFilter', 'q'));
+        return view('transaksi.index', compact(
+            'transaksi',
+            'statusFilter',
+            'q',
+            'tahunFilter',
+            'bulanFilter',
+            'tanggalFilter',
+            'tahunMulai',
+        ));
     }
 
     public function checkout(Request $request)

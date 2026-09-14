@@ -24,6 +24,30 @@
         <input type="search" name="q" value="{{ $q }}" maxlength="100"
             placeholder="{{ $adminMode ? 'Cari kode / nama / email pembeli...' : 'Cari kode pesanan...' }}"
             class="w-full max-w-xs rounded border px-3 py-2 text-sm">
+
+        <select name="tanggal" class="rounded border bg-white px-3 py-2 text-sm">
+            <option value="">Semua tanggal</option>
+            @foreach (range(1, 31) as $t)
+                <option value="{{ $t }}" @selected($tanggalFilter === $t)>{{ $t }}</option>
+            @endforeach
+        </select>
+
+        <select name="bulan" class="rounded border bg-white px-3 py-2 text-sm">
+            <option value="">Semua bulan</option>
+            @foreach (range(1, 12) as $b)
+                <option value="{{ $b }}" @selected($bulanFilter === $b)>
+                    {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                </option>
+            @endforeach
+        </select>
+
+        <select name="tahun" class="rounded border bg-white px-3 py-2 text-sm">
+            <option value="">Semua tahun</option>
+            @for ($th = now()->year; $th >= $tahunMulai; $th--)
+                <option value="{{ $th }}" @selected($tahunFilter === $th)>{{ $th }}</option>
+            @endfor
+        </select>
+
         <select name="status" class="rounded border bg-white px-3 py-2 text-sm">
             <option value="">Semua status</option>
 
@@ -34,7 +58,7 @@
 
         <button class="rounded border bg-white px-4 py-2 text-sm hover:bg-gray-50">Saring</button>
 
-        @if ($statusFilter !== '' || $q !== '')
+        @if ($statusFilter !== '' || $q !== '' || $tahunFilter || $bulanFilter || $tanggalFilter)
             <a href="{{ route('transaksi.index') }}"
                 class="rounded border bg-white px-4 py-2 text-sm hover:bg-gray-50">Reset</a>
         @endif
@@ -73,7 +97,8 @@
 
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3">
-                            <a href="{{ route('transaksi.show', $trx) }}" class="font-medium text-blue-700 hover:underline">
+                            <a href="{{ route('transaksi.show', $trx) }}"
+                                class="font-medium text-blue-700 hover:underline">
                                 {{ $trx->kode }}
                             </a>
                         </td>
@@ -113,7 +138,7 @@
                 @empty
                     <tr>
                         <td colspan="{{ $adminMode ? 7 : 6 }}" class="px-4 py-10 text-center text-gray-500">
-                            @if ($q !== '' || $statusFilter !== '')
+                            @if ($q !== '' || $statusFilter !== '' || $tahunFilter || $bulanFilter || $tanggalFilter)
                                 Gak ada transaksi yang cocok dengan pencarianmu.
                             @elseif ($adminMode)
                                 Belum ada transaksi masuk.

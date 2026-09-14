@@ -24,6 +24,9 @@ class ProductController extends Controller implements HasMiddleware
     {
         $q = is_string($request->query('q')) ? trim($request->query('q')) : '';
         $categoryId = $request->integer('category_id') ?: null;
+        $sort = in_array($request->query('sort'), ['termurah', 'termahal'], true)
+            ? $request->query('sort')
+            : null;
 
         $products = Product::query()
             ->where('is_active', true)
@@ -36,7 +39,9 @@ class ProductController extends Controller implements HasMiddleware
                 });
             })
             ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
-            ->latest()
+            ->when($sort === 'termurah', fn ($query) => $query->orderBy('price', 'asc')->orderBy('id'))
+            ->when($sort === 'termahal', fn ($query) => $query->orderBy('price', 'desc')->orderBy('id'))
+            ->when(! $sort, fn ($query) => $query->latest()->orderBy('id', 'desc'))
             ->paginate(10)
             ->withQueryString();
 
@@ -45,6 +50,7 @@ class ProductController extends Controller implements HasMiddleware
             'categories' => Category::orderBy('name')->get(),
             'q'          => $q,
             'categoryId' => $categoryId,
+            'sort'       => $sort,
         ]);
     }
 
@@ -232,7 +238,7 @@ class ProductController extends Controller implements HasMiddleware
             ->where('is_active', false)
             ->with(['category', 'primaryImage'])
             ->withCount('images')
-            ->latest('updated_at')
+            ->latest('updated_at')->orderBy('id', 'desc')
             ->paginate(10);
 
         return view('products.arsip', compact('products'));
