@@ -138,8 +138,7 @@
             </table>
         </div>
     @else
-        @forelse ($products as $product)
-        @empty
+        @if ($products->isEmpty())
             <p class="rounded-lg bg-white p-10 text-center text-sm text-gray-500 shadow">
                 @if ($q !== '' || $categoryId)
                     Gak ada produk yang cocok dengan pencarianmu.
@@ -147,28 +146,34 @@
                     Belum ada produk aktif.
                 @endif
             </p>
-        @endforelse
+        @else
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-5">
+                @foreach ($products as $product)
+                    <a href="{{ route('products.show', $product) }}"
+                        class="flex flex-col rounded-lg bg-white p-3 shadow hover:shadow-md">
+                        @if ($product->primaryImage)
+                            <img src="{{ $product->primaryImage->url }}" alt="{{ $product->name }}" loading="lazy"
+                                class="h-32 w-full rounded bg-gray-50 object-contain">
+                        @else
+                            <div
+                                class="flex h-32 w-full items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
+                                Belum ada gambar
+                            </div>
+                        @endif
 
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            @foreach ($products as $product)
-                <a href="{{ route('products.show', $product) }}" class="rounded-lg bg-white p-3 shadow hover:shadow-md">
-                    @if ($product->primaryImage)
-                        <img src="{{ $product->primaryImage->url }}" alt="{{ $product->name }}" loading="lazy"
-                            class="h-32 w-full rounded object-cover">
-                    @else
-                        <div class="flex h-32 w-full items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
-                            Belum ada gambar
+                        <div class="mt-2 line-clamp-2 text-sm font-medium text-gray-800">
+                            {{ $product->name }}
                         </div>
-                    @endif
 
-                    <div class="mt-2 text-sm font-medium text-gray-800">{{ $product->name }}</div>
-                    <div class="text-xs text-gray-500">{{ $product->category->name }}</div>
-                    <div class="mt-1 text-sm font-semibold text-blue-700">
-                        Rp {{ number_format($product->price, 0, ',', '.') }}
-                    </div>
-                </a>
-            @endforeach
-        </div>
+                        <div class="truncate text-xs text-gray-500">{{ $product->category->name }}</div>
+
+                        <div class="mt-auto pt-1 text-sm font-semibold text-blue-700">
+                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        @endif
     @endif
 
     <div class="mt-4">

@@ -20,6 +20,11 @@
             </a>
 
             @if (auth()->user()?->isAdmin())
+                <a href="{{ route('laporan.index') }}"
+                   class="text-sm {{ request()->routeIs('laporan.*') ? 'font-semibold text-blue-700' : 'text-gray-600 hover:text-gray-900' }}">
+                    Laporan
+                </a>
+
                 <a href="{{ route('products.arsip') }}"
                    class="text-sm {{ request()->routeIs('products.arsip') ? 'font-semibold text-blue-700' : 'text-gray-600 hover:text-gray-900' }}">
                     Arsip
