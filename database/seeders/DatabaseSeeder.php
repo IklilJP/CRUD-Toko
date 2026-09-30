@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'user@toko.test'],
             [
-                'name'     => 'Budi Pembeli',
+                'name'     => 'agus Pembeli',
                 'password' => 'password',
                 'role'     => 'user',
             ]
@@ -74,5 +74,7 @@ class DatabaseSeeder extends Seeder
         foreach ($contoh as $data) {
             Product::firstOrCreate(['sku' => $data['sku']], $data);
         }
+
+        $this->call(LaporanDemoSeeder::class);
     }
 }

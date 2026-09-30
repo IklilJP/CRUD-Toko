@@ -31,6 +31,7 @@ class Transaksi extends Model
 
     public const SEMUA_STATUS = ['menunggu', 'dibayar', 'dikirim', 'selesai', 'batal'];
     public const STATUS_ADMIN = ['menunggu', 'dibayar', 'dikirim', 'selesai'];
+    public const STATUS_PENJUALAN = ['dibayar', 'dikirim', 'selesai'];
 
     public function user(): BelongsTo
     {

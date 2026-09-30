@@ -32,6 +32,8 @@
         @yield('konten')
     </main>
 
+    @stack('scripts')
+
 </body>
 
 </html>
